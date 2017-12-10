@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import FooterComponent from '../../app/FooterComponent.js'
-import { Container, Content, Card, CardItem, Left,Right, Body, Thumbnail,Spinner, Icon, Header, Text  } from 'native-base';
+import { Container, View, Content, Card, CardItem, Left,Right, Body, Thumbnail,Spinner, Icon, Header, Text  } from 'native-base';
 
 export default class Helped extends Component {
   constructor(props) {
@@ -9,12 +9,9 @@ export default class Helped extends Component {
 
   render() {
     return (
-      <Container>
-        <Content>
-          <Text>Helped</Text>
-        </Content>
-        <FooterComponent />
-      </Container>
+      <View>
+        <Text>Helped</Text>
+      </View>
     );
   }
 }

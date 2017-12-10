@@ -21,9 +21,9 @@ export default class Wall extends Component {
 
   render() {
     return (
-      <View>
-        <Text>Wall</Text>
-        <FooterComponent />
+      <View style={{ alignSelf: "center", margin: 2}}>
+        <Text>Private Key: X01234</Text>
+        <Text>Count Ether: 1234</Text>
       </View>
     );
   }

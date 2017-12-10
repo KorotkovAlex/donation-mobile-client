@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Container, Content, Card, CardItem, Left,Right, Body, Thumbnail,Spinner, Icon, Header, Text  } from 'native-base';
 
 import RequestCard from '../RequestCard'
-import FooterComponent from '../../app/FooterComponent.js'
+import FooterComponent from '../../app/FooterComponent'
 
 // const styles = StyleSheet.create({
 //   button: {
@@ -27,6 +27,7 @@ export default class Requests extends Component {
         <Content>
           <RequestCard />
         </Content>
+        <FooterComponent navigation = {this.props.navigation} activeComponent = 'Requests' />
       </Container>
     );
   }
