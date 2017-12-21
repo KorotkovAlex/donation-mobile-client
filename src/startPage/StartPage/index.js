@@ -5,6 +5,7 @@ import {
   TextInput,
   View
 } from 'react-native';
+import { connect } from 'react-redux';
 import {
   NativeRouter,
   Link,
@@ -32,191 +33,189 @@ import {
 } from 'native-base';
 import RNFS from 'react-native-fs';
 
-console.log();
-const styles = StyleSheet.create({
-  bigblue: {
-    color: 'blue',
-    fontWeight: 'bold',
-    fontSize: 30,
-  },
-  red: {
-    color: 'red',
-  },
-  button: {
-    width: 150,
-    height: 100,
-    alignItems: 'center',
-    justifyContent: 'center'
-  }
-});
+import {
+  compose,
+  defaultProps,
+  setPropTypes,
+  withState,
+  withProps,
+  withHandlers,
+  lifecycle
+} from 'recompose';
+// Sconst mapStateToProps = ({reducer} ) => ({reducer});
 
-export default class Wall extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      login: '',
-      password: '',
-      error: ''
-    };
-  }
+const mapStateToProps = ({ requestReducer, reducer } ) => ({ requestReducer, reducer });
 
-  _onPressButton(params) {
-      console.log(params);
-      console.log(this.state);
-      // const fileContents = await FileSystem.readFile('my-directory/test.txt');
-      // console.log(`read from file: ${fileContents}`);
-      const { navigate } = this.props.navigation;
-      navigate('UserProfile');
-      // fetch(`http://192.168.0.103:3000/user`, {
-      //   method: 'GET',
-      //   headers: {
-      //     'Accept': 'application/json',
-      //     'Content-Type': 'application/json',
-      //   }
-      // }).then((response) => {
-      //   console.log(response._bodyInit);
-      //   console.log(response.headers._bodyInit);
-      //   navigate('UserProfile');
-      // }).catch((error) => {
-      //   console.error(error);
-      // });
-      console.log("Post");
-      // fetch(`http://192.168.43.15:3000/user`, {
-      //   method: 'POST',
-      //   body: JSON.stringify({
-      //       login: this.state.login,
-      //       password: this.state.password,
-      //   }),
-      //   headers: {
-      //     'Accept': 'application/json',
-      //     'Content-Type': 'application/json',
-      //   }
-      // }).then((response) => {
-      //   console.log(response._bodyInit);
-      //   if (response === {}) {
-      //     var error = 'login is invalid';
-      //     this.setState({error});
-      //   } else {
-      //     navigate('UserProfile');
-      //   }
-      // }).catch((error) => {
-      //   console.error(error);
-      // });
-  }
+const enhance = compose(
+  connect(mapStateToProps),
 
-  _onPressButton2() {
-    console.log(this.state);
-    const { navigate } = this.props.navigation;
-    // fetch(`http://192.168.0.103:3000/user`, {
-    //   method: 'GET',
-    //   headers: {
-    //     'Accept': 'application/json',
-    //     'Content-Type': 'application/json',
-    //   }
-    // }).then((response) => {
-    //   console.log(response._bodyInit);
-    //   console.log(response.headers._bodyInit);
-    //   navigate('UserProfile');
-    // }).catch((error) => {
-    //   console.error(error);
-    // });
-    console.log("Post");
-    fetch(`http://192.168.43.15:3000/signup`, {
-      method: 'POST',
-      body: JSON.stringify({
-          login: this.state.login,
-          password: this.state.password,
-      }),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      }.then((response) => {
-        if (response === {}) {
-          var error = 'login is invalid';
-          this.setState({error});
-        } else {
-          RNFS.writeFile(path, 'Lorem ipsum dolor sit amet', 'utf8')
-            .then((success) => {
-              console.log('FILE WRITTEN!');
+
+  withState('login', 'setLogin', ''),
+  withState('password', 'setPassword', ''),
+
+  withHandlers({
+    _onPressButton: ({ login, password, navigation }) => () => {
+      const { navigate } = navigation;
+      var path = RNFS.DocumentDirectoryPath + '/test.json';
+      RNFS.readFile(path, 'utf8').then(data => {
+        const jsonData = JSON.parse(data);
+        if(password === jsonData.password ) {
+          console.log("Post");
+          fetch(`http://192.168.0.100:3000/login`, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                privateKey: jsonData.privateKey,
+                password: jsonData.password,
             })
-            .catch((err) => {
-              console.log(err.message);
-            });
-          navigate('UserProfile');
+          }).then((response) => {
+            if (response._bodyInit) {
+              navigate('UserProfile');
+            } else {
+              console.error(error);
+            }
+          }).catch((error) => {
+            console.error(error);
+          });
         }
-      })
-    })
-  }
-
-  _readDer() {
-    //readFile
-    //writeFile
-    //readFile(filepath: string, encoding?: string): Promise<string>
-    RNFS.readDir(RNFS.DocumentDirectoryPath) // On Android, use "RNFS.DocumentDirectoryPath" (MainBundlePath is not defined)
-      .then((result) => {
-        console.log('GOT RESULT', result);
-
-        // stat the first file
-        return Promise.all([RNFS.stat(result[0].path), result[0].path]);
-      })
-      .then((statResult) => {
-        if (statResult[0].isFile()) {
-          // if we have a file, read it
-          return RNFS.readFile(statResult[1], 'utf8');
-        }
-
-        return 'no file';
-      })
-      .then((contents) => {
-        // log the file contents
-        console.log(contents);
-      })
-      .catch((err) => {
-        console.log(err.message, err.code);
+        console.log('jsonData', );
       });
-      var path = RNFS.DocumentDirectoryPath + '/test.txt';
+    },
 
-// write the file
+    _onPressSignup: ({ login, password, navigation }) => () => {
+      const { navigate } = navigation;
+      fetch(`http://192.168.0.100:3000/signup`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            password: password,
+        })
+      }).then((response) => {
+        console.log('response.body', response._bodyInit);
+      }).catch((error) => {
+        console.error(error);
+      });
+    },
 
-  }
+    _testButton: () => () => {
+      var path = RNFS.DocumentDirectoryPath + '/test.json';
+      RNFS.writeFile(path, '{ "password": "1234", "privateKey": "0x8a84331220Db20A067D571EE950F881F98b7BD43"}', 'utf8')
+        .then((success) => {
+          console.log('FILE WRITTEN!', RNFS.DocumentDirectoryPath + '/test.json');
+        })
+        .catch((err) => {
+          console.log(err.message);
+        });
 
-  render() {
-    return (
-      <Container>
-        <Content>
-          <Item style={{ alignSelf: "center", width: 300, marginTop: 10}}>
-            <Input
-              placeholder="Login"
-              onChangeText={(login) => this.setState({login})}
-            />
-          </Item>
-          <Item style={{ alignSelf: "center", width: 300, margin: 10}}>
-            <Input
-              style={{ alignSelf: "center", width: 300, margin: 2}}
-              placeholder="Password"
-              onChangeText={(password) => this.setState({password})}
-            />
-          </Item>
-          <View>
-            <Button style={{ alignSelf: "center", width: 300, margin: 10}} onPress={() =>
-              this._onPressButton("navigate")} block info>
-              <Text>Login</Text>
-            </Button>
-          </View>
-          <View>
-            <Button style={{ alignSelf: "center", width: 300, margin: 10}} onPress={() =>
-              this._onPressButton2()} block info>
-              <Text>Logup</Text>
-            </Button>
-          </View>
-          <View>
-            <Button style={{ alignSelf: "center", width: 300, margin: 10}} onPress={() =>
-              this._readDer()} block info>
-              <Text>Info</Text>
-            </Button>
-          </View>
-        </Content>
-      </Container>
-    );
-  }
-}
+      RNFS.readFile(path, 'utf8').then(data => {
+        const jsonData = JSON.parse(data);
+        console.log('jsonData', jsonData.password);
+      });
+      // RNFS.readFile(path+'1', 'utf8').then(data => {
+      //   console.log(data);
+      // }).catch(error => {
+      //   console.log('error');
+      // });
+    }
+  }),
+
+  // withProps(({ _onPressSignup }) => {
+  //   // return {
+  //   //   signup: <Text>s</Text>
+  //   // }
+  //   const signup = null;
+  //   var path = RNFS.DocumentDirectoryPath + '/test.json';
+  //
+  //   return RNFS.readFile(path, 'utf8').then(data => {
+  //     return   {signup: (
+  //         <View>
+  //           <Button style={{ alignSelf: "center", width: 300, margin: 10}} onPress={() => _onPressSignup()} block info>
+  //             <Text>Signup</Text>
+  //           </Button>
+  //         </View>
+  //       )}
+  //     // const jsonData = JSON.parse(data);
+  //     // console.log('jsonData', jsonData.password);
+  //   }).catch(error => {
+  //     return {
+  //       signup: (
+  //         <View><Text>Signup</Text></View>
+  //       )
+  //     }
+  //   })
+  //
+  // })
+);
+
+const StartPage = ({
+  _testButton,
+  _onPressSignup,
+  _onPressButton,
+  setPassword,
+  signup
+}) => (
+  <Container>
+    <Content>
+      <Item style={{ alignSelf: "center", width: 300, margin: 10}}>
+        <Input
+          style={{ alignSelf: "center", width: 300, margin: 2}}
+          placeholder="Password"
+          onChangeText={(password) => setPassword(password)}
+        />
+      </Item>
+      <View>
+        <Button style={{ alignSelf: "center", width: 300, margin: 10}} onPress={() => _onPressButton()} block info>
+          <Text>Login</Text>
+        </Button>
+      </View>
+      {signup}
+      <View>
+        <Button style={{ alignSelf: "center", width: 300, margin: 10}} onPress={() => _testButton()} block info>
+          <Text>Test button</Text>
+        </Button>
+      </View>
+    </Content>
+  </Container>
+);
+
+export default enhance(StartPage);
+
+//
+//
+// console.log();
+//
+// class StartPage extends Component {
+//   constructor(props) {
+//     super(props);
+//     this.state = {
+//       login: '',
+//       password: '',
+//       error: ''
+//     };
+//   }
+//
+//
+//
+//
+//
+//
+//   render() {
+//     console.log('props',this.props);
+//     console.log('state',this.state);
+//     const selectedKeyIndex = this.props.reducer;
+//     console.log('selectedKeyIndex', selectedKeyIndex);
+//
+//     return (
+//
+//     );
+//   }
+// }
+
+
+// export default connect(mapStateToProps)(StartPage);

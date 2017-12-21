@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
-import FooterComponent from '../../app/FooterComponent.js'
+import FooterComponent from '../../app/components/FooterComponent.js'
 
 const styles = StyleSheet.create({
   button: {

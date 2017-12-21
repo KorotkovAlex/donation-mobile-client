@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Container, Content, Card, CardItem, Left,Right, Body, Thumbnail,Spinner, Icon, Header, Text  } from 'native-base';
 
 import RequestCard from '../RequestCard'
-import FooterComponent from '../../app/FooterComponent'
+import FooterComponent from '../../app/components/FooterComponent'
 
 // const styles = StyleSheet.create({
 //   button: {
