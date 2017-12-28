@@ -13,35 +13,34 @@ import {
   lifecycle
 } from 'recompose';
 
-import { addRecepients as addRecepientsAction } from '../request.action'
-// const mapDispatchToProps = dispatch => bindActionCreators({ togglePhoto: togglePhotoAction }, dispatch);
-
-
-const mapStateToProps = ({requestReducer} ) => ({requestReducer});
-
+import { addRecepients as addRecepientsAction } from '../../requests/request.action';
 const mapDispatchToProps = dispatch => bindActionCreators({ addRecepients: addRecepientsAction }, dispatch);
 
-const enhance = compose(
-  connect(mapStateToProps, mapDispatchToProps),
+const mapStateToProps = ({requestReducer, startPageReducers} ) => ({requestReducer, startPageReducers});
 
-  withState('users', 'setUsers', []),
+const enhance = compose(
+  connect(mapStateToProps,mapDispatchToProps),
+
+  withState('usersRequest', 'setUsersRequest', []),
   withState('refreshing', 'setRefrehing', false),
 
 
   lifecycle({
     componentWillMount() {
-      fetch(`http://192.168.43.15:3000/getusers`, {
+      const privateKey = this.props.startPageReducers.startPageReducers.privateKey;
+      fetch(`http://192.168.43.15:3000/getusersbykey`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-        }
+        },
+        body: JSON.stringify({
+          privateKey: privateKey
+        })
       }).then((response) => {
-        console.log('response._bodyInit',response._bodyInit);
+        console.log('response._bodyInit', response);
         const jsonData = JSON.parse(response._bodyInit);
-        console.log('jsonData',jsonData);
-
-        this.props.setUsers(jsonData);
+        this.props.setUsersRequest(jsonData);
       }).catch((error) => {
         console.error(error);
       });
@@ -49,23 +48,6 @@ const enhance = compose(
   }),
 
   withHandlers({
-    _onRefresh: ({ setUsers, setRefrehing }) => () => {
-      setRefrehing(true);
-      fetch(`http://192.168.43.15:3000/getusers`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        }
-      }).then((response) => {
-        console.log('response._bodyInit',response._bodyInit);
-        const jsonData = JSON.parse(response._bodyInit);
-        console.log('jsonData',jsonData);
-        setUsers(jsonData);
-        setRefrehing(false);
-      })
-    },
-
     _view: ({ navigation, addRecepients }) => recepient => {
       const newRecipient = {
         privateKeyRecipient: recepient[0],
@@ -80,10 +62,10 @@ const enhance = compose(
     }
   }),
 
-  withProps(({ users, _view, navigation }) => {
-
+  withProps(({ usersRequest, _view, navigation }) => {
+    console.log('usersRequest', usersRequest);
     return {
-      people: users.map((data, index) => {
+      people: usersRequest.map((data, index) => {
         return (
           <Card key={index}>
             <CardItem>
@@ -96,7 +78,7 @@ const enhance = compose(
                 <Text
                   style={{ paddingTop: 2}}
                 >
-                  Count need: {data[3]/1000000000000000000} eth
+                  Count need:{data[3]/1000000000000000000}eth
                 </Text>
                 <Text
                   style={{ paddingTop: 2}}
@@ -126,14 +108,9 @@ const RequestCard = ({
   _onRefresh,
   refreshing
 }) => (
-  <Content refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={_onRefresh}
-          />
-        }>
+  <Container>
       {people}
-  </Content>
+  </Container>
 );
 
 export default enhance(RequestCard);

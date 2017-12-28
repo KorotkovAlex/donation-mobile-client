@@ -16,8 +16,9 @@ import RNFS from 'react-native-fs';
 import Helped from '../../helped/Helped'
 import Wall from '../../wall/Wall';
 import FooterComponent from '../../app/components/FooterComponent.js'
+import UsersRequest from '../UsersRequest';
 
-const mapStateToProps = ({requestReducer} ) => ({requestReducer});
+const mapStateToProps = ({requestReducer, startPageReducers} ) => ({requestReducer, startPageReducers});
 
 const enhance = compose(
   connect(mapStateToProps),
@@ -26,35 +27,24 @@ const enhance = compose(
   withState('ether', 'setEther', ''),//getBalance
 
   lifecycle({
-      componentWillMount() {
-        var path = RNFS.DocumentDirectoryPath + '/test.json';
-        console.log('path', path);
-        RNFS.readFile(path, 'utf8').then(data => {
-          const jsonData = JSON.parse(data);
-          console.log("data", data);
-
-          console.log("Post");
-          fetch(`http://192.168.0.100:3000/getbalance`, {
-            method: 'POST',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                privateKey: jsonData.privateKey,
-            })
-          }).then((response) => {
-            console.log('ether', this.props.ether);
-            console.log('response._bodyInit', response._bodyInit);
-
-            this.props.setEther(response._bodyInit)
-          }).catch((error) => {
-            console.error(error);
-          });
-        });
-      }
-    })
-
+    componentWillMount() {
+      const privateKey = this.props.startPageReducers.startPageReducers.privateKey;
+      fetch(`http://192.168.43.15:3000/getbalance`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            privateKey: privateKey,
+        })
+      }).then((response) => {
+        this.props.setEther(response._bodyInit)
+      }).catch((error) => {
+        console.error(error);
+      });
+    }
+  })
 );
 
 const UserProfile = ({
@@ -62,19 +52,18 @@ const UserProfile = ({
   navigation
 }) => (
   <Container>
-    <Card>
-      <CardItem>
-        <Body>
-          <Wall />
-          <Text>{ether}</Text>
-        </Body>
-      </CardItem>
-      <CardItem>
-        <Body>
-          <Helped />
-        </Body>
-      </CardItem>
-    </Card>
+    <Content style={{flex: 1}}>
+      <Card>
+        <CardItem>
+          <Body>
+            <View style={{ alignSelf: "center", margin: 2}}>
+              <Text>Count Ether: {ether}</Text>
+            </View>
+          </Body>
+        </CardItem>
+      </Card>
+      <UsersRequest navigation = {navigation} />
+    </Content>
     <FooterComponent navigation = {navigation} activeComponent = 'UserProfile' />
   </Container>
 );

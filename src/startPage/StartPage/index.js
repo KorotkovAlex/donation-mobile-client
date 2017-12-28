@@ -6,6 +6,8 @@ import {
   View
 } from 'react-native';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 import {
   NativeRouter,
   Link,
@@ -42,26 +44,30 @@ import {
   withHandlers,
   lifecycle
 } from 'recompose';
-// Sconst mapStateToProps = ({reducer} ) => ({reducer});
 
-const mapStateToProps = ({ requestReducer, reducer } ) => ({ requestReducer, reducer });
+import { savePrivatKey as savePrivatKeyAction } from '../startPage.action'
+
+
+const mapStateToProps = ({ requestReducer, reducer, startPageReducers } ) => ({ requestReducer, reducer, startPageReducers });
+
+const mapDispatchToProps = dispatch => bindActionCreators({ savePrivatKey: savePrivatKeyAction }, dispatch);
 
 const enhance = compose(
-  connect(mapStateToProps),
+  connect(mapStateToProps,mapDispatchToProps),
 
 
   withState('login', 'setLogin', ''),
   withState('password', 'setPassword', ''),
 
   withHandlers({
-    _onPressButton: ({ login, password, navigation }) => () => {
+    _onPressButton: ({ login, password, navigation, savePrivatKey }) => () => {
       const { navigate } = navigation;
       var path = RNFS.DocumentDirectoryPath + '/test.json';
       RNFS.readFile(path, 'utf8').then(data => {
         const jsonData = JSON.parse(data);
         if(password === jsonData.password ) {
           console.log("Post");
-          fetch(`http://192.168.0.100:3000/login`, {
+          fetch(`http://192.168.43.15:3000/login`, {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -73,6 +79,7 @@ const enhance = compose(
             })
           }).then((response) => {
             if (response._bodyInit) {
+              savePrivatKey(jsonData.privateKey);
               navigate('UserProfile');
             } else {
               console.error(error);
@@ -87,7 +94,7 @@ const enhance = compose(
 
     _onPressSignup: ({ login, password, navigation }) => () => {
       const { navigate } = navigation;
-      fetch(`http://192.168.0.100:3000/signup`, {
+      fetch(`http://192.168.43.15:3000/signup`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -98,6 +105,14 @@ const enhance = compose(
         })
       }).then((response) => {
         console.log('response.body', response._bodyInit);
+        var path = RNFS.DocumentDirectoryPath + '/test.json';
+        RNFS.writeFile(path, response._bodyInit, 'utf8')
+        .then((success) => {
+          console.log('FILE WRITTEN!', RNFS.DocumentDirectoryPath + '/test.json');
+        })
+        .catch((err) => {
+          console.log(err.message);
+        });
       }).catch((error) => {
         console.error(error);
       });
@@ -117,53 +132,20 @@ const enhance = compose(
         const jsonData = JSON.parse(data);
         console.log('jsonData', jsonData.password);
       });
-      // RNFS.readFile(path+'1', 'utf8').then(data => {
-      //   console.log(data);
-      // }).catch(error => {
-      //   console.log('error');
-      // });
     }
-  }),
-
-  // withProps(({ _onPressSignup }) => {
-  //   // return {
-  //   //   signup: <Text>s</Text>
-  //   // }
-  //   const signup = null;
-  //   var path = RNFS.DocumentDirectoryPath + '/test.json';
-  //
-  //   return RNFS.readFile(path, 'utf8').then(data => {
-  //     return   {signup: (
-  //         <View>
-  //           <Button style={{ alignSelf: "center", width: 300, margin: 10}} onPress={() => _onPressSignup()} block info>
-  //             <Text>Signup</Text>
-  //           </Button>
-  //         </View>
-  //       )}
-  //     // const jsonData = JSON.parse(data);
-  //     // console.log('jsonData', jsonData.password);
-  //   }).catch(error => {
-  //     return {
-  //       signup: (
-  //         <View><Text>Signup</Text></View>
-  //       )
-  //     }
-  //   })
-  //
-  // })
+  })
 );
 
 const StartPage = ({
   _testButton,
   _onPressSignup,
   _onPressButton,
-  setPassword,
-  signup
+  setPassword
 }) => (
   <Container>
     <Content>
       <Item style={{ alignSelf: "center", width: 300, margin: 10}}>
-        <Input
+        <Input secureTextEntry={true}
           style={{ alignSelf: "center", width: 300, margin: 2}}
           placeholder="Password"
           onChangeText={(password) => setPassword(password)}
@@ -174,7 +156,11 @@ const StartPage = ({
           <Text>Login</Text>
         </Button>
       </View>
-      {signup}
+      <View>
+        <Button style={{ alignSelf: "center", width: 300, margin: 10}} onPress={() => _onPressSignup()} block info>
+          <Text>Signup</Text>
+        </Button>
+      </View>
       <View>
         <Button style={{ alignSelf: "center", width: 300, margin: 10}} onPress={() => _testButton()} block info>
           <Text>Test button</Text>
@@ -185,37 +171,3 @@ const StartPage = ({
 );
 
 export default enhance(StartPage);
-
-//
-//
-// console.log();
-//
-// class StartPage extends Component {
-//   constructor(props) {
-//     super(props);
-//     this.state = {
-//       login: '',
-//       password: '',
-//       error: ''
-//     };
-//   }
-//
-//
-//
-//
-//
-//
-//   render() {
-//     console.log('props',this.props);
-//     console.log('state',this.state);
-//     const selectedKeyIndex = this.props.reducer;
-//     console.log('selectedKeyIndex', selectedKeyIndex);
-//
-//     return (
-//
-//     );
-//   }
-// }
-
-
-// export default connect(mapStateToProps)(StartPage);

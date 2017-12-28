@@ -14,11 +14,13 @@ import { StackNavigator } from 'react-navigation';
 import UserProfile from '../userProfile/UserProfile'
 import Requests from '../requests/Requests'
 import NewRequest from '../requests/NewRequest'
+import RequestCard from '../requests/RequestCard'
+import RequestDetails from '../requests/RequestDetails'
 import Wall from '../wall/Wall'
 import StartPage from '../startPage/StartPage'
 import Helped from '../helped/Helped'
 import FooterComponent from './components/FooterComponent'
-
+import SplashPage from './components/SplashPage'
 
 class App extends Component {
   render() {
@@ -28,12 +30,16 @@ class App extends Component {
       NewRequest: { screen: NewRequest },
       Wall: { screen: Wall },
       Requests: { screen: Requests },
-      Helped: { screen: Helped }
+      Helped: { screen: Helped },
+      RequestDetails: { screen: RequestDetails },
+      RequestCard: { screen: RequestCard }
     });
 
     return (
       <Provider store={store}>
-        <Navigation />
+        <Navigation
+          initialRoute={{id: SplashPage}}
+          />
       </Provider>
     )
   }
